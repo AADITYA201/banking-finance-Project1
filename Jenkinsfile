@@ -32,15 +32,13 @@ pipeline {
 
         stage('Push to ECR') {
             steps {
-                script {
-                    sh '''
-                        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-                    '''
-                    sh '''
-                        docker tag financeme-app:latest $ECR_REPO:$IMAGE_TAG
-                    '''
-                    sh '''
-                        docker push $ECR_REPO:$IMAGE_TAG
+                  withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+            sh '''
+                aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+                aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 442426861623.dkr.ecr.us-east-1.amazonaws.com/financeme
+                docker tag financeme:latest 442426861623.dkr.ecr.us-east-1.amazonaws.com/financeme:latest
+                docker push 442426861623.dkr.ecr.us-east-1.amazonaws.com/financeme:latest
                     '''
                 }
             }
